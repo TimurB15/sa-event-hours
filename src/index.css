@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Heebo", system-ui, sans-serif;
+  --color-ink: #111111;
+  --color-muted: #6a6a6a;
+  --color-line: #e8e8e8;
+}
+
+html, body, #root { min-height: 100%; }
+
+body {
+  font-family: var(--font-sans);
+  background-color: #ffffff;
+  color: var(--color-ink);
+  background-image: url("/patterns/floral-branches.svg");
+  background-repeat: repeat;
+  background-size: 280px 280px;
+  background-attachment: fixed;
+}
+
+.btn-primary {
+  @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-ink px-5 py-3 text-base font-bold text-white shadow-sm transition active:opacity-80;
+}
+.btn-secondary {
+  @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border-2 border-ink bg-white px-5 py-3 text-base font-semibold text-ink transition active:bg-[#F5F5F5];
+}
+.btn-danger {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl border border-line bg-white px-4 py-2 text-sm font-semibold text-red-700 active:bg-[#F5F5F5];
+}
+.input-field {
+  @apply w-full rounded-xl border-2 border-line bg-white px-4 py-3 text-base text-ink outline-none transition focus:border-ink;
+}
+.card {
+  @apply rounded-xl border border-line bg-white p-4 shadow-sm;
+}
