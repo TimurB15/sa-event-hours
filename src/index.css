@@ -13,7 +13,7 @@ body {
   font-family: var(--font-sans);
   background-color: #ffffff;
   color: var(--color-ink);
-  background-image: url("/patterns/floral-branches.svg");
+  background-image: url("../patterns/floral-branches.svg");
   background-repeat: repeat;
   background-size: 280px 280px;
   background-attachment: fixed;
