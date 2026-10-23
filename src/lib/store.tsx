@@ -41,8 +41,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<AppData>(() => loadData())
 
   const commit = useCallback((next: AppData) => {
-    setData(next)
     saveData(next)
+    setData(next)
   }, [])
 
   const api = useMemo<Store>(
@@ -55,17 +55,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           ...data,
           employees: data.employees.map((e) => (e.id === id ? { ...e, ...patch } : e)),
         }),
-      deleteEmployee: (id) =>
-        commit({
-          ...data,
-          employees: data.employees.filter((e) => e.id !== id),
-          shifts: data.shifts.filter((s) => s.employeeId !== id),
-          jobs: data.jobs.map((j) =>
-            j.claimedByEmployeeId === id && j.status === 'claimed'
-              ? { ...j, status: 'open', claimedByEmployeeId: undefined, claimedAt: undefined }
-              : j,
-          ),
-        }),
+      deleteEmployee: (id) => {
+        if (data.shifts.some(s => s.employeeId === id) || data.jobs.some(j => j.claimedByEmployeeId === id)) {
+          alert('לא ניתן למחוק עובד עם היסטוריית עבודה. הרשומות נשמרו.'); return
+        }
+        commit({ ...data, employees: data.employees.filter(e => e.id !== id) })
+      },
       addClient: (name) =>
         commit({ ...data, clients: [...data.clients, newClient(name)] }),
       updateClient: (id, patch) =>
@@ -73,13 +68,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           ...data,
           clients: data.clients.map((c) => (c.id === id ? { ...c, ...patch } : c)),
         }),
-      deleteClient: (id) =>
-        commit({
-          ...data,
-          clients: data.clients.filter((c) => c.id !== id),
-          shifts: data.shifts.filter((s) => s.clientId !== id),
-          jobs: data.jobs.filter((j) => j.clientId !== id),
-        }),
+      deleteClient: (id) => {
+        if (data.shifts.some(s => s.clientId === id) || data.jobs.some(j => j.clientId === id)) {
+          alert('לא ניתן למחוק לקוח עם היסטוריית עבודה. הרשומות נשמרו.'); return
+        }
+        commit({ ...data, clients: data.clients.filter(c => c.id !== id) })
+      },
       addShift: (s) => commit({ ...data, shifts: [newShift(s), ...data.shifts] }),
       updateShift: (id, patch) =>
         commit({
@@ -103,15 +97,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         const job = data.jobs.find((j) => j.id === jobId)
         const emp = data.employees.find((e) => e.id === employeeId)
         if (!job || job.status !== 'open' || !emp) return false
-        const hours = job.estimatedHours && job.estimatedHours > 0 ? job.estimatedHours : 8
-        const shift = newShift({
-          date: job.date,
-          employeeId,
-          clientId: job.clientId,
-          part: job.part,
-          hours,
-          rate: emp.defaultRate,
-        })
         commit({
           ...data,
           jobs: data.jobs.map((j) =>
@@ -124,7 +109,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
                 }
               : j,
           ),
-          shifts: [shift, ...data.shifts],
+
         })
         return true
       },

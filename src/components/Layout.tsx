@@ -1,23 +1,30 @@
-import { Outlet } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, Outlet, useLocation } from 'react-router-dom'
+import { Cloud, Moon, Sun, WifiOff } from 'lucide-react'
 import { BottomNav } from './BottomNav'
 
 export function Layout() {
+  const [online, setOnline] = useState(navigator.onLine)
+  const [dark, setDark] = useState(() => localStorage.getItem('sa-appearance') === 'dark')
+  const location = useLocation()
+  useEffect(() => {
+    const update = () => setOnline(navigator.onLine)
+    addEventListener('online', update); addEventListener('offline', update)
+    return () => { removeEventListener('online', update); removeEventListener('offline', update) }
+  }, [])
+  useEffect(() => { document.documentElement.dataset.theme = dark ? 'dark' : 'light'; localStorage.setItem('sa-appearance', dark ? 'dark' : 'light') }, [dark])
+  useEffect(() => { window.scrollTo({ top: 0 }) }, [location.pathname])
   return (
-    <div className="mx-auto min-h-dvh max-w-lg pb-24">
-      <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-line bg-white/90 px-4 py-3 backdrop-blur">
-        <img
-          src={`${import.meta.env.BASE_URL}brand/sa-event-logistics-logo.png`}
-          alt="SA Event Logistics"
-          className="h-10 w-10 rounded-full border border-line object-cover"
-        />
-        <div>
-          <h1 className="text-base font-extrabold leading-tight text-ink">שעות עובדים</h1>
-          <p className="text-[11px] font-medium leading-tight text-muted">SA Event Logistics</p>
-        </div>
+    <div className="app-shell">
+      <header className="app-header">
+        <Link to="/" className="brand-lockup" aria-label="SA Event Logistics — בית">
+          <img src={`${import.meta.env.BASE_URL}brand/sa-event-logistics-logo.png`} alt="" />
+          <div><span className="brand-name" dir="ltr">SA EVENT</span><span className="brand-subtitle" dir="ltr">LOGISTICS & PEOPLE</span></div>
+        </Link>
+        <div className="header-actions"><button className="icon-button" aria-label={dark ? 'מצב בהיר' : 'מצב כהה'} onClick={() => setDark(v => !v)}>{dark ? <Sun size={19}/> : <Moon size={19}/>}</button><Link className="icon-button" to="/cloud" aria-label="סביבת עבודה משותפת"><Cloud size={20}/></Link></div>
       </header>
-      <main className="px-4 py-4">
-        <Outlet />
-      </main>
+      {!online && <div className="offline-banner" role="status"><WifiOff size={16}/> אין חיבור לרשת — המידע המקומי זמין במכשיר הזה</div>}
+      <main className="page-content"><Outlet /></main>
       <BottomNav />
     </div>
   )

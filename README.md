@@ -1,32 +1,25 @@
-# React + TypeScript + Vite
+# SA Event Logistics
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Hebrew RTL event workforce management for iPhone, Android and the web. Built on the existing SA hours ledger with React/TypeScript, Capacitor and an optional Supabase shared workspace.
 
-Currently, two official plugins are available:
+## Run
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```sh
+pnpm install --frozen-lockfile
+pnpm dev
+pnpm test
+pnpm build
+pnpm native:sync
+pnpm ios:altstore
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+The original local ledger remains available and preserves its storage key. The cloud icon opens the authenticated workspace; a real Supabase project must be configured before it can synchronize. The existing GitHub Pages deployment is unchanged by this feature branch.
+
+- [Architecture and release boundaries](docs/ARCHITECTURE.md)
+- [Setup and data migration](docs/SETUP.md)
+- [Testing and observed results](docs/TESTING.md)
+- [iOS, AltStore and Android release](docs/RELEASE.md)
+- [Security](docs/SECURITY.md)
+- [Design references](docs/DESIGN.md)
+
+Do not use unreviewed imported hours or unconfigured customer policies for production payroll. Installation through AltStore signs a real device IPA; an unsigned build alone is not proof of installation.

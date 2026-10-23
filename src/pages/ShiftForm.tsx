@@ -17,7 +17,7 @@ export default function ShiftForm() {
   const [mode, setMode] = useState<'hours' | 'range'>(
     existing?.startTime && existing?.endTime ? 'range' : 'hours',
   )
-  const [hours, setHours] = useState(String(existing?.hours ?? '8'))
+  const [hours, setHours] = useState(String(existing?.hours ?? ''))
   const [startTime, setStartTime] = useState(existing?.startTime ?? '08:00')
   const [endTime, setEndTime] = useState(existing?.endTime ?? '16:00')
 
