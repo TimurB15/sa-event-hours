@@ -1,3 +1,5 @@
+import { businessDate, calculatePay, csvCell, minutesFromRange } from '../domain/payroll'
+import { validateLegacy } from '../domain/migration'
 import type { AppData, Client, Employee, OpenJob, Shift } from './types'
 
 const KEY = 'shiurei-ovdim-v1'
@@ -28,7 +30,7 @@ export function loadData(): AppData {
       localStorage.setItem(KEY, JSON.stringify(SEED))
       return structuredClone(SEED)
     }
-    const data = JSON.parse(raw) as AppData
+    const data = validateLegacy(JSON.parse(raw))
     return {
       employees: data.employees ?? [],
       clients: data.clients ?? [],
@@ -36,7 +38,7 @@ export function loadData(): AppData {
       jobs: data.jobs ?? [],
     }
   } catch {
-    return structuredClone(SEED)
+    throw new Error("Original local data could not be read; writes disabled")
   }
 }
 
@@ -66,26 +68,14 @@ export function formatILS(n: number) {
 }
 
 export function shiftAmount(s: Shift) {
-  return Math.round(s.hours * s.rate * 100) / 100
+  return calculatePay(Math.round(s.hours * 60), { kind: 'hourly', rateAgorot: Math.round(s.rate * 100), minimumAgorot: 0, fixedAgorot: 0 }) / 100
 }
 
 export function hoursFromRange(start: string, end: string): number | null {
-  if (!start || !end) return null
-  const [sh, sm] = start.split(':').map(Number)
-  const [eh, em] = end.split(':').map(Number)
-  if ([sh, sm, eh, em].some((x) => Number.isNaN(x))) return null
-  let mins = eh * 60 + em - (sh * 60 + sm)
-  if (mins <= 0) mins += 24 * 60
-  return Math.round((mins / 60) * 100) / 100
+  try { return minutesFromRange(start, end) / 60 } catch { return null }
 }
 
-export function todayISO() {
-  const d = new Date()
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
-}
+export function todayISO() { return businessDate() }
 
 export function exportCsv(data: AppData) {
   const emp = Object.fromEntries(data.employees.map((e) => [e.id, e]))
@@ -102,7 +92,7 @@ export function exportCsv(data: AppData) {
       String(s.rate),
       String(shiftAmount(s)),
     ])
-  const esc = (v: string) => `"${v.replace(/"/g, '""')}"`
+  const esc = csvCell
   const csv = '\uFEFF' + [header, ...rows].map((r) => r.map(esc).join(',')).join('\n')
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
   const url = URL.createObjectURL(blob)
